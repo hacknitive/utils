@@ -1,9 +1,6 @@
 from sys import argv
 
-KEYWORDS_OF_TESTS = ("unittest",
-                     "pytest",
-                     "django test",
-                     )
+from .constant import ARGS_OF_TESTS
 
 
 def is_test_mode() -> bool:
@@ -40,7 +37,7 @@ def is_test_mode() -> bool:
         """
     args = " ".join(argv).lower()
 
-    for i in KEYWORDS_OF_TESTS:
+    for i in ARGS_OF_TESTS:
         if i in args:
             return True
 

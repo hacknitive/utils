@@ -20,16 +20,16 @@ INSTALL_REQUIRES = parse_requirements('requirements.txt')
 # SETUP
 # ===========================================================
 setup(
-    name="utilsfastapi",
+    name="utils",
     version="v0.0.1",
-    packages=find_packages(include=['utilsfastapi', 'utilsfastapi.*']),
+    packages=find_packages(include=['utils', 'utils.*']),
     install_requires=INSTALL_REQUIRES,
     author="Reza 'Sam' Aghamohammadi (Hacknitive)",
     author_email="hacknitive@gmail.com",
-    description="Utility for fastapi",
+    description="Utility for ...",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/hacknitive/utilsfastapi",
+    url="https://github.com/hacknitive/utils",
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",

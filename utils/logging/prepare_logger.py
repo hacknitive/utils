@@ -1,8 +1,4 @@
 from typing import Optional
-from sys import (
-    stderr,
-    stdout,
-)
 
 from os import (
     makedirs,
@@ -20,13 +16,7 @@ from logging.handlers import (
     TimedRotatingFileHandler,
 )
 
-from .enums import EnumLogLevel, EnumLogHandler, EnumLogStream
-
-
-STREAM_DICT = {
-    EnumLogStream.STDOUT: stdout,
-    EnumLogStream.STDERR: stderr,
-}
+from .constant import *
 
 
 class PrepareLogger:

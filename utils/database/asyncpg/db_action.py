@@ -5,8 +5,8 @@ from typing import (
 )
 
 from asyncpg.pool import Pool
-from utilsfastapi.exception_handling import ProjectBaseException
-from utilsfastapi.constant import (
+from utils.exception_handling import ProjectBaseException
+from utils.constant import (
     EnumOrderBy,
     MAP_ORDER_BY_SQL,
     EnumDatetimeDuration,

@@ -1,4 +1,8 @@
 from enum import Enum
+from sys import (
+    stderr,
+    stdout,
+)
 
 
 class EnumLogLevel(str, Enum):
@@ -61,10 +65,7 @@ class EnumLogStream(str, Enum):
     STDERR = "STDERR"
     STDOUT = "STDOUT"
 
-
-class EnumRunMode(str, Enum):
-    PRODUCTION = "PRODUCTION"
-    STAGING = "STAGING"
-    DEVELOPMENT = "DEVELOPMENT"
-    LOCAL = "LOCAL"
-    TEST = "TEST"
+STREAM_DICT = {
+    EnumLogStream.STDOUT: stdout,
+    EnumLogStream.STDERR: stderr,
+}
