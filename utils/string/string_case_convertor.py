@@ -9,7 +9,7 @@ case_strategy_function_dict = {
 }
 
 
-def string_case_convertor(
+def convert_string_case(
         text: str,
         split_char: str,
         join_char: str,
@@ -36,7 +36,7 @@ def string_case_convertor(
 
 
 if __name__ == '__main__':
-    result = string_case_convertor(
+    result = convert_string_case(
         text='hEllo woRld',
         split_char=' ',
         join_char='',

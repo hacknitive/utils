@@ -1,4 +1,4 @@
-from .project_base_exception import ProjectBaseException
+from ...exception.project_base_exception import ProjectBaseException
 from .create_traceback import create_traceback
 
 from .http_exception_handling import prepare_handler_for_http_exception_function

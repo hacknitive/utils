@@ -1,11 +1,21 @@
+from traceback import format_exc
+from logging import Logger
+
 from fastapi import FastAPI
 
-from src.manager.setting import logger
 
-
-async def close_db(app: FastAPI):
+async def close_db(
+        app: FastAPI,
+        logger: Logger = None,
+        attr_name: str = "pool",
+        ) -> None:
     try:
-        await app.state.pool.close()
-        logger.info("Pool is closed.")
+        pool = getattr(app.state, attr_name)
+        await pool.close()
+        if logger:
+            logger.info("%s is closed.", attr_name)
     except Exception:
-        pass
+        logger.info(format_exc())
+
+    return None
+        

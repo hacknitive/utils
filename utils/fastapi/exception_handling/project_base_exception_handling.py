@@ -8,7 +8,7 @@ from fastapi import (
 from utils.settings import EnumRunMode
 
 from ..router import ProjectOrjsonResponse as Response
-from ...exception_handling import ProjectBaseException
+from ...exception import ProjectBaseException
 from .create_traceback import create_traceback
 
 

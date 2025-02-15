@@ -5,13 +5,18 @@ from typing import (
 )
 
 from asyncpg.pool import Pool
-from utils.exception_handling import ProjectBaseException
-from utils.constant import (
+from ...exception import ProjectBaseException
+from ..constant import (
     EnumOrderBy,
     MAP_ORDER_BY_SQL,
     EnumDatetimeDuration,
 )
 
+VALID_DURATIONS = {
+    "DAILY": ("day", 'YYYY-MM-DD'),
+    "MONTHLY": ("month", 'YYYY-MM'),
+    "YEARLY": ("year", 'YYYY'),
+}
 
 class DbAction:
     def __init__(
@@ -404,66 +409,36 @@ WHERE {where_clause};"""
             field_name: str,
     ):
 
-        if duration == EnumDatetimeDuration.MONTHLY:
-            query = (
-                f"""
+        trunc_value, date_format = VALID_DURATIONS[duration]
+
+        query = (
+            f"""
 WITH date_range AS (
     SELECT
-        DATE_TRUNC('month', MIN({field_name})) AS start_month,
-        DATE_TRUNC('month', MAX({field_name})) AS end_month
+        DATE_TRUNC('{trunc_value}', MIN({field_name})) AS start_range,
+        DATE_TRUNC('{trunc_value}', MAX({field_name})) AS end_range
     FROM
         {self.table_name}
 ),
-months AS (
+periods AS (
     SELECT
         generate_series(
-            (SELECT start_month FROM date_range),
-            (SELECT end_month FROM date_range),
-            INTERVAL '1 month'
-        ) AS month
+            (SELECT start_range FROM date_range),
+            (SELECT end_range FROM date_range),
+            INTERVAL '1 {trunc_value}'
+        ) AS period
 )
 SELECT
-    to_char(months.month, 'YYYY-MM') AS datetime,
+    to_char(periods.period, '{date_format}') AS datetime,
     COUNT({self.table_name}.pid) AS count
 FROM
-    months
+    periods
 LEFT JOIN
-    {self.table_name} ON DATE_TRUNC('month', {self.table_name}.{field_name}) = months.month
+    {self.table_name} ON DATE_TRUNC('{trunc_value}', {self.table_name}.{field_name}) = periods.period
 GROUP BY
-    months.month
+    periods.period
 ORDER BY
-    months.month ASC;"""
-            )
-        else:
-            query = (
-                f"""
-WITH date_range AS (
-    SELECT
-        DATE_TRUNC('day', MIN({field_name})) AS start_day,
-        DATE_TRUNC('day', MAX({field_name})) AS end_day
-    FROM
-        {self.table_name}
-),
-days AS (
-    SELECT
-        generate_series(
-            (SELECT start_day FROM date_range),
-            (SELECT end_day FROM date_range),
-            INTERVAL '1 day'
-        ) AS day
-)
-SELECT
-    to_char(days.day, 'YYYY-MM-DD') AS datetime,
-    COUNT({self.table_name}.pid) AS count
-FROM
-    days
-LEFT JOIN
-    {self.table_name} ON DATE_TRUNC('day', {self.table_name}.{field_name}) = days.day
-GROUP BY
-    days.day
-ORDER BY
-    days.day ASC;"""
-            )
+    periods.period ASC;""")
 
         return await self.connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
