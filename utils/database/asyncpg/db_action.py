@@ -18,6 +18,7 @@ VALID_DURATIONS = {
     "YEARLY": ("year", 'YYYY'),
 }
 
+
 class DbAction:
     def __init__(
         self,
@@ -32,6 +33,122 @@ class DbAction:
         self.ilike_columns_names = ilike_columns_names
         self.equality_columns_names = equality_columns_names
         self.range_columns_names = range_columns_names
+
+    async def insert_many_without_transact(
+        self,
+        inputs_list: list[dict[str, Any]],
+        postgresql_connection_pool: Pool,
+        returning_fields: set[str],
+    ) -> list[dict] | str:
+        batch_size = self.calculate_batch_size(inputs_list=inputs_list)
+        batches = self.build_batches(
+            inputs_list=inputs_list,
+            batch_size=batch_size,
+        )
+
+        total_results = list()
+        for batch in batches:
+            query, inputs_values = await self.build_query_for_insert_many(
+                batch=batch,
+                returning_fields=returning_fields,
+            )
+
+            results = await self.connect_by_fetch(
+                postgresql_connection_pool=postgresql_connection_pool,
+                query=query,
+                inputs_values=inputs_values,
+            )
+            total_results.extend(results)
+
+        return total_results
+
+    async def insert_many_with_transact(
+        self,
+        inputs_list: list[dict[str, Any]],
+        postgresql_connection_pool: Pool,
+        returning_fields: set[str],
+    ) -> list[dict] | str:
+        batch_size = self.calculate_batch_size(inputs_list=inputs_list)
+        batches = self.build_batches(
+            inputs_list=inputs_list,
+            batch_size=batch_size,
+        )
+
+        return self.connect_by_fetch_for_insert_many_with_transact(
+            postgresql_connection_pool=postgresql_connection_pool,
+            batches=batches,
+            returning_fields=returning_fields,
+        )
+
+
+    async def connect_by_fetch_for_insert_many_with_transact(
+            self,
+            postgresql_connection_pool: Pool,
+            batches: list[list[dict[str, Any]]],
+            returning_fields: set[str],
+    ) -> Any:
+        total_results = list()
+        async with postgresql_connection_pool.acquire() as connection:
+            async with connection.transaction():
+                for batch in batches:
+                    query, inputs_values = await self.build_query_for_insert_many(
+                        batch=batch,
+                        returning_fields=returning_fields,
+                    )
+                    results = await connection.fetch(query, *inputs_values)
+                    total_results.extend(results)
+
+        return total_results
+
+    @staticmethod
+    def calculate_batch_size(inputs_list: list[dict[str, Any]]) -> int:
+        maximum_key_count = max([len(i) for i in inputs_list])
+        # asyncpg only accept 32767 argument in a single query
+        return int(30000 / maximum_key_count)
+
+    @staticmethod
+    def build_batches(
+            inputs_list: list[dict[str, Any]],
+            batch_size: int,
+    ) -> list[list[dict[str, Any]]]:
+        return [
+            inputs_list[i:i+batch_size]
+            for i in range(
+                0,
+                len(inputs_list),
+                batch_size,
+            )
+        ]
+
+    async def build_query_for_insert_many(
+            self,
+            batch: list[dict],
+            returning_fields: set[str],
+    ) -> tuple[str, list]:
+        columns = list(batch[0].keys())
+        columns_str = ", ".join(columns)
+
+        row_placeholders_list = []
+        inputs_values = []
+        num_columns = len(columns)
+        for i, row in enumerate(batch):
+            placeholders = []
+            for j, col in enumerate(columns):
+                placeholder = f"${i * num_columns + j + 1}"
+                placeholders.append(placeholder)
+                inputs_values.append(row[col])
+            row_placeholders = "(" + ", ".join(placeholders) + ")"
+            row_placeholders_list.append(row_placeholders)
+
+        values_placeholders_str = ", ".join(row_placeholders_list)
+        query = f"INSERT INTO {self.table_name} ({columns_str}) VALUES {values_placeholders_str}"
+        valid_returning_fields = self.all_columns_names & returning_fields
+        if valid_returning_fields:
+            query += f" RETURNING {','.join(valid_returning_fields)};"
+        else:
+            query += ";"
+
+        return query, inputs_values
 
     async def insert_one(
         self,
@@ -126,13 +243,11 @@ WHERE {where_clause}
 
         return result['flag']
 
-    async def fetch(
+    def prepare_fetch_query(
         self,
         where_clause: str,
-        values: Iterable,
-        postgresql_connection_pool: Pool,
         returning_fields: set[str],
-    ) -> dict:
+    ) -> str:
 
         returning_fields = self.all_columns_names & returning_fields
         if returning_fields:
@@ -147,7 +262,41 @@ FROM {self.table_name}
 WHERE {where_clause};"""
         )
 
+        return query
+
+    async def fetch(
+        self,
+        where_clause: str,
+        values: Iterable,
+        postgresql_connection_pool: Pool,
+        returning_fields: set[str],
+    ) -> dict:
+
+        query = self.prepare_fetch_query(
+            where_clause=where_clause,
+            returning_fields=returning_fields,
+        )
+
         return await self.connect_by_fetch_row(
+            postgresql_connection_pool=postgresql_connection_pool,
+            query=query,
+            inputs_values=values,
+        )
+
+    async def fetch_many(
+        self,
+        where_clause: str,
+        values: Iterable,
+        postgresql_connection_pool: Pool,
+        returning_fields: set[str],
+    ) -> list[dict]:
+
+        query = self.prepare_fetch_query(
+            where_clause=where_clause,
+            returning_fields=returning_fields,
+        )
+
+        return await self.connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=values,
@@ -380,7 +529,7 @@ FROM {self.table_name}
         async with postgresql_connection_pool.acquire() as connection:
             return await connection.fetch(
                 query,
-                *inputs_values
+                *inputs_values,
             )
 
     async def delete(
