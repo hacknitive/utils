@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from traceback import format_exc
 
 
-class InMemoryCache:
+class InMemoryCacheManager:
 
     def __init__(
             self,
@@ -32,11 +32,28 @@ class InMemoryCache:
                 if value[0] < criteria:
                     del self.cache[key]
                     self.logger.debug(
-                        "This key '%s' is deleted from %s cache", 
-                        key, 
+                        "This key '%s' is deleted from %s cache",
+                        key,
                         self.name,
-                        )
+                    )
 
+        except Exception:
+            self.logger.warning(format_exc())
+
+        return None
+
+    def clear_cache_cron_func(
+        self,
+    ) -> None:
+        self.logger.debug("Start clearing cache from %s", self.name)
+        try:
+            cache_count = len(self.cache)
+            self.clear_cache()
+            self.logger.debug(
+                "%s cache is cleared. %s items are deleted.",
+                self.name,
+                cache_count,
+            )
         except Exception:
             self.logger.warning(format_exc())
 
@@ -59,19 +76,34 @@ class InMemoryCache:
             value = self.cache[key]
             if value[0] > datetime.utcnow():
                 return value[1]
+            else:
+                del self.cache[key]
+
         return None
 
-    def insert_in_cache(
+    def insert_in_cache_with_expiration(
         self,
         key: str,
-        data: str,
+        value: str,
     ):
         self.cache[key] = (
             datetime.utcnow() + timedelta(seconds=self.maximum_ttl_in_seconds),
-            data,
+            value,
         )
 
         return None
-    
+
+    def insert_in_cache_without_expiration(
+        self,
+        key: str,
+        value: str,
+    ):
+        self.cache[key] = (
+            None,
+            value,
+        )
+
+        return None
+
     def clear_cache(self) -> None:
         self.cache.clear()

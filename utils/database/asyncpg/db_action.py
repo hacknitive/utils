@@ -48,12 +48,12 @@ class DbAction:
 
         total_results = list()
         for batch in batches:
-            query, inputs_values = await self.build_query_for_insert_many(
+            query, inputs_values = await self._build_query_for_insert_many(
                 batch=batch,
                 returning_fields=returning_fields,
             )
 
-            results = await self.connect_by_fetch(
+            results = await self._connect_by_fetch(
                 postgresql_connection_pool=postgresql_connection_pool,
                 query=query,
                 inputs_values=inputs_values,
@@ -74,14 +74,14 @@ class DbAction:
             batch_size=batch_size,
         )
 
-        return await self.connect_by_fetch_for_insert_many_with_transact(
+        return await self._connect_by_fetch_for_insert_many_with_transact(
             postgresql_connection_pool=postgresql_connection_pool,
             batches=batches,
             returning_fields=returning_fields,
         )
 
 
-    async def connect_by_fetch_for_insert_many_with_transact(
+    async def _connect_by_fetch_for_insert_many_with_transact(
             self,
             postgresql_connection_pool: Pool,
             batches: list[list[dict[str, Any]]],
@@ -91,7 +91,7 @@ class DbAction:
         async with postgresql_connection_pool.acquire() as connection:
             async with connection.transaction():
                 for batch in batches:
-                    query, inputs_values = await self.build_query_for_insert_many(
+                    query, inputs_values = await self._build_query_for_insert_many(
                         batch=batch,
                         returning_fields=returning_fields,
                     )
@@ -120,7 +120,7 @@ class DbAction:
             )
         ]
 
-    async def build_query_for_insert_many(
+    async def _build_query_for_insert_many(
             self,
             batch: list[dict],
             returning_fields: set[str],
@@ -161,7 +161,7 @@ class DbAction:
         inputs_values = tuple(inputs.values())
 
         query = (
-            f"""INSERT INTO {self.table_name} ({inputs_keys_str})
+f"""INSERT INTO {self.table_name} ({inputs_keys_str})
 VALUES ({inputs_loc_str})
 """
         )
@@ -172,7 +172,7 @@ VALUES ({inputs_loc_str})
         else:
             query += ';'
 
-        return await self.connect_by_fetch_row(
+        return await self._connect_by_fetch_row(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=inputs_values,
@@ -235,7 +235,7 @@ SELECT 1 FROM {self.table_name}
 WHERE {where_clause}
 ) As flag;"""
         )
-        result = await self.connect_by_fetch_row(
+        result = await self._connect_by_fetch_row(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=values,
@@ -243,7 +243,7 @@ WHERE {where_clause}
 
         return result['flag']
 
-    def prepare_fetch_query(
+    def _prepare_fetch_query(
         self,
         where_clause: str,
         returning_fields: set[str],
@@ -272,12 +272,12 @@ WHERE {where_clause};"""
         returning_fields: set[str],
     ) -> dict:
 
-        query = self.prepare_fetch_query(
+        query = self._prepare_fetch_query(
             where_clause=where_clause,
             returning_fields=returning_fields,
         )
 
-        return await self.connect_by_fetch_row(
+        return await self._connect_by_fetch_row(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=values,
@@ -291,12 +291,12 @@ WHERE {where_clause};"""
         returning_fields: set[str],
     ) -> list[dict]:
 
-        query = self.prepare_fetch_query(
+        query = self._prepare_fetch_query(
             where_clause=where_clause,
             returning_fields=returning_fields,
         )
 
-        return await self.connect_by_fetch(
+        return await self._connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=values,
@@ -328,7 +328,7 @@ WHERE {where_clause}"""
         else:
             query += ';'
 
-        return await self.connect_by_fetch_row(
+        return await self._connect_by_fetch_row(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=inputs.values(),
@@ -360,23 +360,23 @@ FROM {self.table_name}
 """
         )
 
-        where_clause, inputs_values = self.create_where_clause(kwargs=kwargs)
+        where_clause, inputs_values = self._create_where_clause(kwargs=kwargs)
         fetch_query += where_clause
         count_query += where_clause
 
-        fetch_query += self.create_order_clause(order_by=order_by)
-        fetch_query += self.create_limit_offset_clause(
+        fetch_query += self._create_order_clause(order_by=order_by)
+        fetch_query += self._create_limit_offset_clause(
             page_size=page_size,
             current_page=current_page,
         )
 
-        records = await self.connect_by_fetch(
+        records = await self._connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
             query=fetch_query,
             inputs_values=inputs_values,
         )
 
-        count = await self.connect_by_fetch(
+        count = await self._connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
             query=count_query,
             inputs_values=inputs_values,
@@ -385,10 +385,10 @@ FROM {self.table_name}
         return records, count[0]["total_count"]
 
     @staticmethod
-    def remove_with_removesuffix(string: str):
+    def _remove_with_removesuffix(string: str):
         return string.removesuffix('_from').removesuffix('_to')
 
-    def create_where_clause(
+    def _create_where_clause(
             self,
             kwargs: dict[str, list[Any]],
     ) -> tuple[str, list]:
@@ -398,9 +398,9 @@ FROM {self.table_name}
         counter = 1
         for key, values in kwargs.items():
             if values:
-                cleaned_key = self.remove_with_removesuffix(key)
+                cleaned_key = self._remove_with_removesuffix(key)
                 if cleaned_key in self.ilike_columns_names:
-                    counter = self.create_where_clause_for_ilike_columns(
+                    counter = self._create_where_clause_for_ilike_columns(
                         where_clauses=where_clauses,
                         values=values,
                         cleaned_key=cleaned_key,
@@ -409,7 +409,7 @@ FROM {self.table_name}
                     )
 
                 elif cleaned_key in self.equality_columns_names:
-                    counter = self.create_where_clause_for_equality_columns(
+                    counter = self._create_where_clause_for_equality_columns(
                         where_clauses=where_clauses,
                         values=values,
                         cleaned_key=cleaned_key,
@@ -418,7 +418,7 @@ FROM {self.table_name}
                     )
 
                 elif cleaned_key in self.range_columns_names:
-                    counter = self.create_where_clause_for_range_columns(
+                    counter = self._create_where_clause_for_range_columns(
                         where_clauses=where_clauses,
                         values=values,
                         cleaned_key=cleaned_key,
@@ -434,7 +434,7 @@ FROM {self.table_name}
         return "", inputs_values
 
     @staticmethod
-    def create_where_clause_for_range_columns(
+    def _create_where_clause_for_range_columns(
             where_clauses: list[str],
             key: str,
             value: int | float | datetime,
@@ -449,7 +449,7 @@ FROM {self.table_name}
         return counter
 
     @staticmethod
-    def create_where_clause_for_equality_columns(
+    def _create_where_clause_for_equality_columns(
             where_clauses: list[str],
             values: list[Any],
             cleaned_key: str,
@@ -466,7 +466,7 @@ FROM {self.table_name}
         return counter
 
     @staticmethod
-    def create_where_clause_for_ilike_columns(
+    def _create_where_clause_for_ilike_columns(
             where_clauses: list[str],
             values: list[Any],
             cleaned_key: str,
@@ -487,7 +487,7 @@ FROM {self.table_name}
         return counter
 
     @staticmethod
-    def create_order_clause(order_by: dict[str, EnumOrderBy]) -> str:
+    def _create_order_clause(order_by: dict[str, EnumOrderBy]) -> str:
         order_clauses = []
         if order_by:
             for column, direction in order_by.items():
@@ -499,7 +499,7 @@ FROM {self.table_name}
         return ""
 
     @staticmethod
-    def create_limit_offset_clause(
+    def _create_limit_offset_clause(
         page_size: int,
         current_page: int,
     ) -> str:
@@ -509,7 +509,7 @@ FROM {self.table_name}
         return ""
 
     @staticmethod
-    async def connect_by_fetch_row(
+    async def _connect_by_fetch_row(
             postgresql_connection_pool: Pool,
             query: str,
             inputs_values: Iterable = tuple(),
@@ -521,7 +521,7 @@ FROM {self.table_name}
             )
 
     @staticmethod
-    async def connect_by_fetch(
+    async def _connect_by_fetch(
             postgresql_connection_pool: Pool,
             query: str,
             inputs_values: Iterable = tuple(),
@@ -545,7 +545,7 @@ DELETE FROM {self.table_name}
 WHERE {where_clause};"""
         )
 
-        return await self.connect_by_fetch_row(
+        return await self._connect_by_fetch_row(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=values,
@@ -589,7 +589,7 @@ GROUP BY
 ORDER BY
     periods.period ASC;""")
 
-        return await self.connect_by_fetch(
+        return await self._connect_by_fetch(
             postgresql_connection_pool=postgresql_connection_pool,
             query=query,
             inputs_values=tuple(),
