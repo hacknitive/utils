@@ -21,7 +21,7 @@ INSTALL_REQUIRES = parse_requirements('requirements.txt')
 # ===========================================================
 setup(
     name="utils",
-    version="v0.0.1",
+    version="v0.0.2",
     packages=find_packages(include=['utils', 'utils.*']),
     install_requires=INSTALL_REQUIRES,
     author="Reza 'Sam' Aghamohammadi (Hacknitive)",
