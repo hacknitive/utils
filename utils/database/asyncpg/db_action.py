@@ -74,7 +74,7 @@ class DbAction:
             batch_size=batch_size,
         )
 
-        return self.connect_by_fetch_for_insert_many_with_transact(
+        return await self.connect_by_fetch_for_insert_many_with_transact(
             postgresql_connection_pool=postgresql_connection_pool,
             batches=batches,
             returning_fields=returning_fields,

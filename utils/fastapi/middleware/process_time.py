@@ -13,6 +13,6 @@ def prepare_process_time_header(
     ):
         start_time = time()
         response = await call_next(request)
-        process_time = round(time() - start_time, 3)
-        response.headers["X-Process-Time"] = str(process_time)
+        process_time = round(1000000*(time() - start_time))
+        response.headers["X-Process-Time-ns"] = str(process_time)
         return response
