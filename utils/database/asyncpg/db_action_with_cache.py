@@ -38,12 +38,13 @@ class DbActionWithCache(DbAction):
         postgresql_connection_pool: Pool,
         returning_fields: set[str],
     ) -> list[dict] | str:
-        await super().insert_many_without_transact(
+        records = await super().insert_many_without_transact(
             inputs_list=inputs_list,
             postgresql_connection_pool=postgresql_connection_pool,
             returning_fields=returning_fields,
         )
         self.cache_manager.clear_cache()
+        return records
 
 
     async def insert_many_with_transact(
@@ -52,12 +53,13 @@ class DbActionWithCache(DbAction):
         postgresql_connection_pool: Pool,
         returning_fields: set[str],
     ) -> list[dict] | str:
-        await super().insert_many_with_transact(
+        records = await super().insert_many_with_transact(
             inputs_list=inputs_list,
             postgresql_connection_pool=postgresql_connection_pool,
             returning_fields=returning_fields,
         )
         self.cache_manager.clear_cache()
+        return records
 
     async def insert_one(
         self,
@@ -65,12 +67,13 @@ class DbActionWithCache(DbAction):
         postgresql_connection_pool: Pool,
         returning_fields: set[str],
     ) -> dict:
-        await super().insert_one(
+        records = await super().insert_one(
             inputs=inputs,
             postgresql_connection_pool=postgresql_connection_pool,
             returning_fields=returning_fields,
         )
         self.cache_manager.clear_cache()
+        return records
 
 
     async def fetch(
@@ -136,13 +139,14 @@ class DbActionWithCache(DbAction):
         postgresql_connection_pool: Pool,
         returning_fields: set[str] = set(),
     ) -> dict | None:
-        await super().update(
+        records = await super().update(
             inputs=inputs,
             where_clause=where_clause,
             postgresql_connection_pool=postgresql_connection_pool,
             returning_fields=returning_fields,
         )
         self.cache_manager.clear_cache()
+        return records
 
     async def paginated_fetch_by_filter(
         self,
@@ -181,12 +185,13 @@ class DbActionWithCache(DbAction):
         values: Iterable,
         postgresql_connection_pool: Pool,
     ) -> dict:
-        await super().delete(
+        records = await super().delete(
             where_clause=where_clause,
             values=values,
             postgresql_connection_pool=postgresql_connection_pool,
         )
         self.cache_manager.clear_cache()
+        return records
 
     async def fetch_report_on_datetime_fields(
             self,
