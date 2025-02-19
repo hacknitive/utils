@@ -9,9 +9,9 @@ class InMemoryCacheManager:
     def __init__(
             self,
             logger: Logger,
-            clean_up_period_in_seconds: int,
-            maximum_ttl_in_seconds: str,
             name: str,
+            clean_up_period_in_seconds: int = 0,
+            maximum_ttl_in_seconds: str = 0,
     ) -> None:
         self.logger = logger
         self.clean_up_period_in_seconds = clean_up_period_in_seconds
