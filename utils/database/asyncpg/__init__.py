@@ -11,3 +11,4 @@ from .get_all_columns_names_sync import get_all_columns_names_sync
 from .get_columns_by_type_sync import get_columns_by_type_sync
 from .get_enum_values_sync import get_enum_values_sync
 from .run_functions_should_run_after_database_setup import run_functions_should_run_after_database_setup
+from .setup_database_sync import setup_database_sync

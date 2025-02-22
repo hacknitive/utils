@@ -5,7 +5,7 @@ from logging import Logger
 
 def load_database_scripts_and_add(
         this_file_path: Path | str,
-        sqls: dict[str, list],
+        sqls: dict[str, str],
         logger: Logger,
         extension: Literal["sql", "mql"] = "sql",
         script_directory_name: str = "sql",

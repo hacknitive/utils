@@ -3,21 +3,14 @@ from logging import Logger
 
 from asyncpg import create_pool
 
-
-CODE_NAME_RUNNING_PRIORITY = (
-    "extensions",
-    "enums",
-    "tables",
-    "constraints",
-    "functions_and_triggers",
-    "indexes",
-)
+from .code_name_running_priority import CODE_NAME_RUNNING_PRIORITY
 
 
 async def setup_database(
         connection_string: str,
         sqls: dict[str, list],
         logger: Logger,
+        code_name_running_priority: list[str] = CODE_NAME_RUNNING_PRIORITY
 ) -> None:
     try:
         print(
@@ -31,11 +24,12 @@ flush=True)
             dsn=connection_string,
             min_size=1,
             max_size=1,
+            
         )
 
-        for code_name in CODE_NAME_RUNNING_PRIORITY:
-            if not sqls[code_name]:
-                logger.info("This code is empty: %s", code_name)
+        for code_name in code_name_running_priority:
+            if not sqls.get(code_name):
+                logger.info("This code is empty or None: %s", code_name)
                 continue
 
             compiled_sql = "\n".join(sqls[code_name])
