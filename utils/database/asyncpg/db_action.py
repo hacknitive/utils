@@ -421,6 +421,7 @@ FROM {self.table_name}
                     counter = self._create_where_clause_for_range_columns(
                         where_clauses=where_clauses,
                         values=values,
+                        key=key,
                         cleaned_key=cleaned_key,
                         counter=counter,
                         inputs_values=inputs_values,
@@ -437,14 +438,14 @@ FROM {self.table_name}
     def _create_where_clause_for_range_columns(
             where_clauses: list[str],
             key: str,
-            value: int | float | datetime,
+            values: int | float | datetime,
             cleaned_key: str,
             counter: int,
             inputs_values: list[Any]
     ) -> int:
         sign = ">=" if key.endswith("_from") else "<="
         where_clauses.append(f"{cleaned_key} {sign} ${counter}")
-        inputs_values.append(value)
+        inputs_values.append(values)
         counter += 1
         return counter
 
@@ -594,3 +595,47 @@ ORDER BY
             query=query,
             inputs_values=tuple(),
         )
+    
+    async def filter_then_aggregate(
+        self,
+        postgresql_connection_pool: Pool,
+        group_by_on_fields: set[str],
+        current_page: int,
+        page_size: int,
+        kwargs: dict[str, Any],
+        aggregation_in_select: str, 
+        aggregation_variable_name: set[str], 
+    ) -> list[dict[str, Any]]:
+
+        order_by:dict = kwargs.pop("order_by")
+        group_by_on_fields = self.all_columns_names & group_by_on_fields
+        group_by_on_fields_str = ','.join(group_by_on_fields)
+        
+        fetch_query = (
+            f"""
+SELECT {group_by_on_fields_str}, {aggregation_in_select}
+FROM {self.table_name}
+"""
+        )
+
+        where_clause, inputs_values = self._create_where_clause(kwargs=kwargs)
+        fetch_query += where_clause
+        
+        fetch_query += (
+f"""\nGROUP BY {group_by_on_fields_str}"""
+        )
+
+        order_by = {key: value for key, value in order_by.items() if key in {*group_by_on_fields, *aggregation_variable_name}}
+        fetch_query += self._create_order_clause(order_by=order_by)
+        fetch_query += self._create_limit_offset_clause(
+            page_size=page_size,
+            current_page=current_page,
+        )
+
+        records = await self._connect_by_fetch(
+            postgresql_connection_pool=postgresql_connection_pool,
+            query=fetch_query,
+            inputs_values=inputs_values,
+        )
+
+        return records

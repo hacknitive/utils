@@ -218,3 +218,35 @@ class DbActionWithCache(DbAction):
         )
 
         return records
+
+    async def filter_then_aggregate(
+        self,
+        postgresql_connection_pool: Pool,
+        group_by_on_fields: set[str],
+        current_page: int,
+        page_size: int,
+        kwargs: dict[str, Any],
+        aggregation_in_select: str, 
+        aggregation_variable_name: set[str], 
+    ) -> list[dict[str, Any]]:
+        key = f"{self.table_name}:filter_then_aggregate:{group_by_on_fields}:{current_page}:{page_size}:{kwargs}:{aggregation_in_select}"
+        value = self.cache_manager.fetch_from_cache_without_expiration_check(key=key)
+        if value:
+            return value
+
+        records = await super().filter_then_aggregate(
+            postgresql_connection_pool=postgresql_connection_pool,
+            group_by_on_fields=group_by_on_fields,
+            current_page=current_page,
+            page_size=page_size,
+            kwargs=kwargs,
+            aggregation_in_select=aggregation_in_select, 
+            aggregation_variable_name=aggregation_variable_name, 
+        )
+
+        self.cache_manager.insert_in_cache_without_expiration(
+            key=key,
+            value=records,
+        )
+
+        return records
