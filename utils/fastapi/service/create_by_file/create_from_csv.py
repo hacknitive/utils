@@ -43,7 +43,7 @@ class CreateFromCsv:
     async def perform(self,):
         self.get_reader()
         self.get_writer()
-        self.core()
+        await self.core()
         self.get_bytesio()
         return self.create_result()
 
