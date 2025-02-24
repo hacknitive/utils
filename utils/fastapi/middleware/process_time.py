@@ -13,5 +13,5 @@ def prepare_process_time_header(
     ):
         start_time = time()
         response = await call_next(request)
-        response.headers["X-Process-Time"] = str(round(time() - start_time), 6)
+        response.headers["X-Process-Time"] = str(round(time() - start_time, 4))
         return response
