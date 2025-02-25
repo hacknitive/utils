@@ -64,8 +64,7 @@ class InMemoryCacheManager:
             key: str,
     ) -> dict | None:
         if key in self.cache:
-            value = self.cache[key]
-            return value[1]
+            return self.cache[key][1]
         return None
 
     def fetch_from_cache_with_expiration_check(
