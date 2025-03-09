@@ -10,20 +10,20 @@ with open("README.md", "r", encoding="utf-8") as handler:
 # ===========================================================
 #  REQUIREMENTS
 # ===========================================================
-def parse_requirements(filename):
-    with open(filename) as f:
-        return f.read().splitlines()
+# def parse_requirements(filename):
+#     with open(filename) as f:
+#         return f.read().splitlines()
 
-INSTALL_REQUIRES = parse_requirements('requirements.txt')
+# INSTALL_REQUIRES = parse_requirements('requirements.txt')
 
 # ===========================================================
 # SETUP
 # ===========================================================
 setup(
     name="utils",
-    version="v0.0.2",
+    version="v0.0.13",
     packages=find_packages(include=['utils', 'utils.*']),
-    install_requires=INSTALL_REQUIRES,
+    install_requires=[],
     author="Reza 'Sam' Aghamohammadi (Hacknitive)",
     author_email="hacknitive@gmail.com",
     description="Utility for ...",
