@@ -32,10 +32,10 @@ async def delete_bulk(
                 success=True,
                 error=None,
             )
-        except ProjectBaseException:
+        except ProjectBaseException as e:
             results[pid] = ModelDeleteBulkResponse(
                 success=False,
-                error="Item is not exist.",
+                error=e.error,
             )
 
         except Exception:

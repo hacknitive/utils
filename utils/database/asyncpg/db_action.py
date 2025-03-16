@@ -80,7 +80,6 @@ class DbAction:
             returning_fields=returning_fields,
         )
 
-
     async def _connect_by_fetch_for_insert_many_with_transact(
             self,
             postgresql_connection_pool: Pool,
@@ -161,7 +160,7 @@ class DbAction:
         inputs_values = tuple(inputs.values())
 
         query = (
-f"""INSERT INTO {self.table_name} ({inputs_keys_str})
+            f"""INSERT INTO {self.table_name} ({inputs_keys_str})
 VALUES ({inputs_loc_str})
 """
         )
@@ -247,6 +246,9 @@ WHERE {where_clause}
         self,
         where_clause: str,
         returning_fields: set[str],
+        order_by: dict[str, EnumOrderBy],
+        current_page: int,
+        page_size: int,
     ) -> str:
 
         returning_fields = self.all_columns_names & returning_fields
@@ -259,10 +261,16 @@ WHERE {where_clause}
         query += (
             f"""
 FROM {self.table_name}
-WHERE {where_clause};"""
+WHERE {where_clause}"""
         )
 
-        return query
+        query += self._create_order_clause(order_by=order_by)
+        query += self._create_limit_offset_clause(
+            page_size=page_size,
+            current_page=current_page,
+        )
+
+        return query + ";"
 
     async def fetch(
         self,
@@ -270,11 +278,17 @@ WHERE {where_clause};"""
         values: Iterable,
         postgresql_connection_pool: Pool,
         returning_fields: set[str],
+        order_by: dict[str, EnumOrderBy] = dict(),
+        current_page: int = 1,
+        page_size: int = 0,
     ) -> dict:
 
         query = self._prepare_fetch_query(
             where_clause=where_clause,
             returning_fields=returning_fields,
+            order_by=order_by,
+            current_page=current_page,
+            page_size=page_size,
         )
 
         return await self._connect_by_fetch_row(
@@ -308,13 +322,21 @@ WHERE {where_clause};"""
         where_clause: str,
         postgresql_connection_pool: Pool,
         returning_fields: set[str] = set(),
+        direct_set_clause: list[str] = list(),
+        add_updated_at: bool = True,
     ) -> dict | None:
-        inputs = {
-            **inputs,
-            "updated_at": datetime.utcnow()
-        }
+        if add_updated_at:
+            inputs = {
+                **inputs,
+                "updated_at": datetime.utcnow()
+            }
+
         set_clause = [f"{key}=${index}" for index,
                       key in enumerate(inputs.keys(), start=1)]
+
+        if direct_set_clause:
+            set_clause.extend(direct_set_clause)
+
         set_clause = ",".join(set_clause)
         query = (
             f"""UPDATE {self.table_name}
@@ -595,7 +617,7 @@ ORDER BY
             query=query,
             inputs_values=tuple(),
         )
-    
+
     async def filter_then_aggregate(
         self,
         postgresql_connection_pool: Pool,
@@ -603,14 +625,14 @@ ORDER BY
         current_page: int,
         page_size: int,
         kwargs: dict[str, Any],
-        aggregation_in_select: str, 
-        aggregation_variable_name: set[str], 
+        aggregation_in_select: str,
+        aggregation_variable_name: set[str],
     ) -> list[dict[str, Any]]:
 
-        order_by:dict = kwargs.pop("order_by")
+        order_by: dict = kwargs.pop("order_by")
         group_by_on_fields = self.all_columns_names & group_by_on_fields
         group_by_on_fields_str = ','.join(group_by_on_fields)
-        
+
         fetch_query = (
             f"""
 SELECT {group_by_on_fields_str}, {aggregation_in_select}
@@ -620,12 +642,13 @@ FROM {self.table_name}
 
         where_clause, inputs_values = self._create_where_clause(kwargs=kwargs)
         fetch_query += where_clause
-        
+
         fetch_query += (
-f"""\nGROUP BY {group_by_on_fields_str}"""
+            f"""\nGROUP BY {group_by_on_fields_str}"""
         )
 
-        order_by = {key: value for key, value in order_by.items() if key in {*group_by_on_fields, *aggregation_variable_name}}
+        order_by = {key: value for key, value in order_by.items(
+        ) if key in {*group_by_on_fields, *aggregation_variable_name}}
         fetch_query += self._create_order_clause(order_by=order_by)
         fetch_query += self._create_limit_offset_clause(
             page_size=page_size,
