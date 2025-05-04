@@ -22,7 +22,7 @@ async def fetch_by_pid(
             "status_code": 404,
             "success": False,
             "data": None,
-            "error": "Item does not exist."
+            "message": "Item does not exist."
         },
     )
 

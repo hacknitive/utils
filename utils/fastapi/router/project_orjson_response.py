@@ -17,8 +17,8 @@ class ProjectOrjsonResponse(Response):
             self,
             status_code: int = 200,
             success: bool = True,
-            data: None | dict | list | BaseModel = None,
-            error: str | dict | list | None | Sequence = None,
+            data: None | str| dict | list | BaseModel | Sequence = None,
+            message: str | None = None,
 
             headers: Optional[dict[str, str]] = None,
             background: Optional[BackgroundTask] = None,
@@ -26,7 +26,7 @@ class ProjectOrjsonResponse(Response):
         self.status_code = status_code
         self.success = success
         self.data = data
-        self.error = error
+        self.message = message
 
         self.background = background
         self.body = self.render()
@@ -40,5 +40,5 @@ class ProjectOrjsonResponse(Response):
             "status_code": self.status_code,
             "success": self.success,
             "data": self.data,
-            "error": self.error
+            "message": self.message
         })

@@ -39,7 +39,7 @@ def prepare_handler_for_5xx_creator_function(
                     status_code=error,
                     success= False,
                     data= None,
-                    error= error_text,
+                    message= error_text,
                 )
 
         else:
@@ -63,8 +63,8 @@ def prepare_handler_for_5xx_creator_function(
                 return Response(
                     status_code=error,
                     success= False,
-                    data= None,
-                    error= traceback_,
+                    data= traceback_,
+                    message= error_text,
                 )
 
         return handler_for_internal_server_error

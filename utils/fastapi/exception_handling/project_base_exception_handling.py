@@ -24,7 +24,7 @@ def prepare_handler_for_project_base_exception_function(
         status_code = getattr(exc,"status_code", 500)
         success = getattr(exc,"success", False)
         data = getattr(exc,"data", None)
-        error = getattr(exc,"error", None)
+        message = getattr(exc,"message", None)
         
         if status_code >= 500:
             traceback_ = None
@@ -40,20 +40,16 @@ def prepare_handler_for_project_base_exception_function(
                 )
                 logger.error(msg=traceback_)
 
-            status_code = status_code
-            success = False
-            data = None
-
             if run_mode == EnumRunMode.PRODUCTION:
-                error = error
+                data = data
             else:
-                error = f"{error}\n{traceback_}" if traceback_ else error
+                data = f"{data}\n{traceback_}" if traceback_ else data
 
         return Response(
                     status_code=status_code,
                     success=success,
-                    data= data,
-                    error= error,
+                    data=data,
+                    message= message,
                 )
 
 

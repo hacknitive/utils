@@ -9,9 +9,9 @@ async def create_traceback(
     status_code = getattr(exc, "status_code", None)
     status_code = status_code
 
+    message = getattr(exc, "message", None)
     success = getattr(exc, "success", None)
     data = getattr(exc, "data", None)
-    error = getattr(exc, "error", None)
 
     # request_body = str(await request.body())
     # request_cookies = str(request.cookies)
@@ -25,7 +25,7 @@ async def create_traceback(
         "exc_status_code": status_code,
         "exc_success": success,
         "exc_data": data,
-        "exc_error": error,
+        "message": message,
         # "request_body": request_body,
         # "request_cookies": request_cookies,
         "request_headers": request_headers,

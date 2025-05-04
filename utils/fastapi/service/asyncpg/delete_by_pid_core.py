@@ -17,7 +17,7 @@ async def delete_by_pid_core(
             "status_code": 404,
             "success": False,
             "data": None,
-            "error": "Item is not exist.",
+            "message": "Item is not exist.",
         },
     )
 

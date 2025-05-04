@@ -11,6 +11,7 @@ HTTP_422_UNPROCESSABLE_ENTITY = status.HTTP_422_UNPROCESSABLE_ENTITY
 
 def prepare_handler_for_validation_errors_function(
     fast_api_app: FastAPI,
+    message: str,
 ):
 
     async def handler_for_validation_error(
@@ -21,8 +22,8 @@ def prepare_handler_for_validation_errors_function(
         return Response(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             success=False,
-            data=None,
-            error=exe_error,
+            data=exe_error,
+            message=message,
             )
 
     fast_api_app.exception_handler(RequestValidationError)(handler_for_validation_error)

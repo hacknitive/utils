@@ -32,8 +32,8 @@ def prepare_handler_for_http_exception_function(
         return Response(
             status_code=exc.status_code,
             success= False,
-            data= None,
-            error= exc.detail,
+            message=message,
+            data= exc.detail,
         )
 
     fast_api_app.exception_handler(HTTPException)(handler_for_http_exception)

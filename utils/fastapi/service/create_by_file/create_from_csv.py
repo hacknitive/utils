@@ -78,11 +78,11 @@ class CreateFromCsv:
             else:
                 self.writer.writerow({**line, **result})
         except Exception as e:
-            error = getattr(e, 'error', None) or e
+            message = getattr(e, 'message', None) or e
 
             result = {
                 **line,
-                'error': str(error).replace("\n", " #NEWLINE "),
+                'error': str(message).replace("\n", " #NEWLINE "),
             }
 
             self.writer.writerow({**result, **line})
@@ -100,15 +100,14 @@ class CreateFromCsv:
             for line in self.reader:
                 await self.do_for_each_line(line)
         except Exception as e:
-            error = getattr(e, 'error', None) or e
-            error = str(error).replace("\n", " #NEWLINE ")
+            message = getattr(e, 'message', None) or e
+            message = str(message).replace("\n", " #NEWLINE ")
 
             raise ProjectBaseException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 success=False,
                 data=None,
-                error=error,
-                message=error,
+                message=message,
             )
 
     def create_result(self,):

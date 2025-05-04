@@ -49,8 +49,7 @@ async def call_url(
                         raise UpperThan300Exception(
                             status_code=response.status,
                             success=False,
-                            data=None,
-                            error=await response.text(),
+                            data=await response.text(),
                             message=error_message,
                             log_this_exc=True,
                         )
@@ -59,15 +58,14 @@ async def call_url(
     
     except Exception as e:
         if run_mode == EnumRunMode.production:
-            error = error_message
+            data = error_message
         else:
-            error = format_exc()
+            data = format_exc()
 
         raise Service503Exception(
             status_code=HTTP_503_SERVICE_UNAVAILABLE,
             success=False,
-            data=None,
-            error=error,
+            data=data,
             message=error_message,
             log_this_exc=True,
         )
@@ -75,15 +73,14 @@ async def call_url(
     if raise_:
         if response.status >= 300:
             if run_mode == EnumRunMode.production:
-                error = error_message
+                data = error_message
             else:
-                error = result
+                data = result
 
             raise UpperThan300Exception(
                 status_code=result.get("status_code") or response.status,
                 success=False,
-                data=None,
-                error=error,
+                data=data,
                 message=error_message,
             )
 
