@@ -18,7 +18,7 @@ class ProjectOrjsonResponse(Response):
             status_code: int = 200,
             success: bool = True,
             data: None | str| dict | list | BaseModel | Sequence = None,
-            message: str | None = None,
+            message: str | None = "Processed successfully.",
 
             headers: Optional[dict[str, str]] = None,
             background: Optional[BackgroundTask] = None,
