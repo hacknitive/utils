@@ -419,7 +419,7 @@ FROM {self.table_name}
 
         counter = 1
         for key, values in kwargs.items():
-            if values:
+            if values:  # TODO: Use sentinel
                 cleaned_key = self._remove_with_removesuffix(key)
                 if cleaned_key in self.ilike_columns_names:
                     counter = self._create_where_clause_for_ilike_columns(

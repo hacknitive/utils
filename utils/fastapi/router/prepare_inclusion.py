@@ -4,6 +4,6 @@ def prepare_inclusion(
     user_exclusion: set[str],
 ) -> set[str]:
     if user_inclusion:
-        return user_inclusion
+        return default_inclusion & user_inclusion
     
     return default_inclusion - user_exclusion
