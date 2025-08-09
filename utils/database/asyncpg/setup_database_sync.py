@@ -1,5 +1,5 @@
 from traceback import format_exc
-from logging import Logger
+from logging import WARNING, Logger
 
 from psycopg2 import pool
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -11,6 +11,7 @@ def setup_database_sync(
         sqls_priorities: tuple[str],
         logger: Logger,
 ) -> None:
+    print("DEPRICATED")
     print(
         """
 ==================================================================================

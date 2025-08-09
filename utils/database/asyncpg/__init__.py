@@ -12,3 +12,4 @@ from .get_columns_by_type_sync import get_columns_by_type_sync
 from .get_enum_values_sync import get_enum_values_sync
 from .run_functions_should_run_after_database_setup import run_functions_should_run_after_database_setup
 from .setup_database_sync import setup_database_sync
+from .async_setup_database import async_setup_database

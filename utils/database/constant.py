@@ -1,9 +1,12 @@
 from enum import Enum
+from typing import Literal
 
 
 class EnumOrderBy(str, Enum):
     A = "A"
     D = "D"
+
+ORDER_BY_LITERAL = Literal[*sorted({i.value for i in EnumOrderBy})]
 
 
 class EnumDatetimeDuration(str, Enum):

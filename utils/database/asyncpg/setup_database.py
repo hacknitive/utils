@@ -8,23 +8,25 @@ from .code_name_running_priority import CODE_NAME_RUNNING_PRIORITY
 
 async def setup_database(
         connection_string: str,
-        sqls: dict[str, list],
+        sqls: dict[str, list[str]],
         logger: Logger,
         code_name_running_priority: list[str] = CODE_NAME_RUNNING_PRIORITY
 ) -> None:
-    try:
-        print(
-"""
+    print(
+        """
 ==================================================================================
-                        <<<<<< DATABASE SETUP >>>>>> 
+                        <<<<<< DATABASE SETUP >>>>>>
 ==================================================================================
 """,
-flush=True)
+        flush=True,
+    )
+    try:
+
         pool = await create_pool(
             dsn=connection_string,
             min_size=1,
             max_size=1,
-            
+
         )
 
         for code_name in code_name_running_priority:
