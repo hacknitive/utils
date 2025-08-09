@@ -1,4 +1,3 @@
-import asyncio
 from traceback import format_exc
 from logging import Logger
 from asyncpg import create_pool
