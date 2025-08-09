@@ -21,7 +21,7 @@ with open("README.md", "r", encoding="utf-8") as handler:
 # ===========================================================
 setup(
     name="utils",
-    version="v1.0.0",
+    version="v1.0.1",
     packages=find_packages(include=['utils', 'utils.*']),
     install_requires=[],
     author="Reza 'Sam' Aghamohammadi (Hacknitive)",
