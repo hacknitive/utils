@@ -1,20 +1,18 @@
 from typing import Any
 from traceback import format_exc
-from json import dumps
 
 from aiohttp import (
     ClientSession,
     ContentTypeError,
 )
-from fastapi import status
-from utilscommon.setting import EnumRunMode
+from ..settings import EnumRunMode
 
 from .exception import (
     Service503Exception,
     UpperThan300Exception,
 )
 
-HTTP_503_SERVICE_UNAVAILABLE = status.HTTP_503_SERVICE_UNAVAILABLE
+HTTP_503_SERVICE_UNAVAILABLE = 503
 
 
 async def call_url(
@@ -57,7 +55,7 @@ async def call_url(
         raise
     
     except Exception as e:
-        if run_mode == EnumRunMode.production:
+        if run_mode == EnumRunMode.PRODUCTION:
             data = error_message
         else:
             data = format_exc()
@@ -72,7 +70,7 @@ async def call_url(
 
     if raise_:
         if response.status >= 300:
-            if run_mode == EnumRunMode.production:
+            if run_mode == EnumRunMode.PRODUCTION:
                 data = error_message
             else:
                 data = result
