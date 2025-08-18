@@ -1,7 +1,7 @@
 from utils.exception import ProjectBaseException
 
 from .status_code import *
-from .message_creator import *
+from .message import *
 
 EXCEPTION_SERVER_ERROR = ProjectBaseException(
     status_code=HTTP_500_INTERNAL_SERVER_ERROR,
