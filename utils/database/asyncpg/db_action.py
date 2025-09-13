@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import (
+    datetime,
+    UTC,
+)
 from typing import (
     Iterable,
     Any,
@@ -328,7 +331,7 @@ WHERE {where_clause}"""
         if add_updated_at:
             inputs = {
                 **inputs,
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.now(tz=UTC)
             }
 
         set_clause = [f"{key}=${index}" for index,

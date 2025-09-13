@@ -2,7 +2,7 @@ from asyncio import get_running_loop
 from os import remove as _remove
 from traceback import format_exc
 
-from manager.setting import logger
+from src.manager.setting import logger
 
 
 async def remove_file(path: str):

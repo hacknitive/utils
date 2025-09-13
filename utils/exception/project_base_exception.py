@@ -1,17 +1,18 @@
 class ProjectBaseException(Exception):
     def __init__(self, **kwargs):
+        # status_code: int,
+        # success: bool = False,
+        # data: None | dict | list = None,
+        # message: str,
+        # headers: dict
+        # context: dict
+        # logger: 
         for key, value in kwargs.items():
             setattr(
                 self,
                 key,
                 value,
             )
-
-    #             status_code: int,
-    #             success: bool = None,
-    #             data: None | dict | list = None,
-    #             error: str | dict | list | None = None,
-    #             log_this_exc: bool = False
 
     def __str__(self):
         return str({

@@ -1,35 +1,33 @@
-from typing import Callable
 from traceback import format_exc
 
-from fastapi import Request
+from fastapi import Request 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from utils.settings import EnumRunMode
 
 
-class ExceptionHandlerClass():
+class ExceptionHandler():
     def __init__(
             self,
             request: Request,
             exc: Exception,
-            perform_exception_logic_func: Callable,
-            run_mode: EnumRunMode,
+            append_traceback_to_message: bool = False
     ) -> None:
         self.request = request
         self.exc = exc
-        self.perform_exception_logic_func = perform_exception_logic_func
-        self.run_mode = run_mode
+        self.append_traceback_to_message = append_traceback_to_message
 
         self.status_code = None
         self.success = None
         self.data = None
         self.message = None
+        self.headers = None
         self.error_traceback = None
         self.content = None
 
     async def perform(self,):
         await self.get_status_code()
         await self.get_success()
+        await self.get_headers()
         await self.get_data()
         await self.get_message()
         await self.get_error_traceback()
@@ -39,7 +37,9 @@ class ExceptionHandlerClass():
         return JSONResponse(
             content=self.content,
             status_code=self.status_code,
+            headers=self.headers,
         )
+
 
     async def get_status_code(self,):
         if isinstance(self.exc, RequestValidationError):
@@ -49,6 +49,9 @@ class ExceptionHandlerClass():
 
     async def get_success(self,):
         self.success = getattr(self.exc, "success", False)
+
+    async def get_headers(self,):
+        self.headers = getattr(self.exc, "headers", None)
 
     async def get_data(self,):
         self.data = getattr(self.exc, "data", None)
@@ -72,22 +75,10 @@ class ExceptionHandlerClass():
         self.message = message
 
     async def get_error_traceback(self,):
-        # if self.status_code >= 500:
         self.error_traceback = format_exc()
-        # else:
-        #     self.error_traceback = None
 
     async def perform_exception_logic(self) -> None:
-        await self.perform_exception_logic_func(
-            request = self.request,
-            exc = self.exc,
-            run_mode = self.run_mode,
-            status_code=self.status_code,
-            success=self.success,
-            data=self.data,
-            message=self.message,
-            error_traceback=self.error_traceback,
-        )
+        pass
 
     async def prepare_content_to_respond(self,):
         self.content = {
@@ -97,5 +88,9 @@ class ExceptionHandlerClass():
             "message": self.message,
         }
 
-        if self.run_mode != EnumRunMode.PRODUCTION:
-            self.content["message"] = self.content["message"] + " - " + str(self.error_traceback)
+        if self.append_traceback_to_message and self.error_traceback:
+            self.content["message"] = (
+                self.content["message"]
+                + " - "
+                + str(self.error_traceback)
+            )
