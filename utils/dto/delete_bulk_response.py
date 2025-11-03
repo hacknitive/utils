@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .response_schema import ResponseSchema
-from .delete_by_pid_response import ModelDeleteByPidResponseWithSchema
+from .delete_by_id_response import ModelDeleteByIdResponseWithSchema
 
 
 class ModelDeleteBulkRequest(BaseModel):
@@ -16,4 +16,4 @@ class ModelDeleteBulkResponse(BaseModel):
 
 
 class ModelDeleteBulkResponseWithSchema(ResponseSchema):
-    data: dict[str, ModelDeleteByPidResponseWithSchema] = None
+    data: dict[str, ModelDeleteByIdResponseWithSchema] = None

@@ -311,6 +311,9 @@ WHERE {where_clause}"""
         query = self._prepare_fetch_query(
             where_clause=where_clause,
             returning_fields=returning_fields,
+            order_by=dict(),
+            current_page=1,
+            page_size=0,
         )
 
         return await self._connect_by_fetch(
@@ -358,6 +361,22 @@ WHERE {where_clause}"""
             query=query,
             inputs_values=inputs.values(),
         )
+
+    async def count(
+        self,
+        postgresql_connection_pool: Pool,
+        where_clause: str,
+        values: Iterable,
+    ) -> int:
+        count_query = f"SELECT COUNT(*) AS total_count FROM {self.table_name} WHERE {where_clause}"
+
+        count_result = await self._connect_by_fetch_row(
+            postgresql_connection_pool=postgresql_connection_pool,
+            query=count_query,
+            inputs_values=values,
+        )
+
+        return count_result["total_count"] if count_result else 0
 
     async def paginated_fetch_by_filter(
         self,
@@ -456,7 +475,7 @@ FROM {self.table_name}
                     continue
 
         if where_clauses:
-            return "WHERE " + " OR ".join(where_clauses), inputs_values
+            return "WHERE " + " AND ".join(where_clauses), inputs_values
         return "", inputs_values
 
     @staticmethod
@@ -488,7 +507,7 @@ FROM {self.table_name}
             inputs_values.append(value)
             counter += 1
 
-        where_clauses.append("(" + " or ".join(or_query) + ")")
+        where_clauses.append("(" + " OR ".join(or_query) + ")")
         return counter
 
     @staticmethod
@@ -509,7 +528,7 @@ FROM {self.table_name}
 
             or_query.append(" AND ".join(and_query))
 
-        where_clauses.append("(" + " or ".join(or_query) + ")")
+        where_clauses.append("(" + " OR ".join(or_query) + ")")
         return counter
 
     @staticmethod

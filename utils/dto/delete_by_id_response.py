@@ -1,5 +1,5 @@
 from .response_schema import ResponseSchema
 
 
-class ModelDeleteByPidResponseWithSchema(ResponseSchema):
+class ModelDeleteByIdResponseWithSchema(ResponseSchema):
     data : None = None

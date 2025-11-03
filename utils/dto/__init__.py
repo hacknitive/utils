@@ -5,7 +5,7 @@ from .response_schema import (
     PaginatedDataSchema,
 )
 from .update_partially_request import ModelUpdatePartiallyRequestValidation
-from .delete_by_pid_response import ModelDeleteByPidResponseWithSchema
+from .delete_by_id_response import ModelDeleteByIdResponseWithSchema
 from .delete_bulk_response import (
     ModelDeleteBulkRequest,
     ModelDeleteBulkResponse,
