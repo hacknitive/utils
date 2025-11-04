@@ -306,14 +306,17 @@ WHERE {where_clause}"""
         values: Iterable,
         postgresql_connection_pool: Pool,
         returning_fields: set[str],
+        order_by: dict[str, EnumOrderBy] = dict(),
+        current_page: int = 1,
+        page_size: int = 0,
     ) -> list[dict]:
 
         query = self._prepare_fetch_query(
             where_clause=where_clause,
             returning_fields=returning_fields,
-            order_by=dict(),
-            current_page=1,
-            page_size=0,
+            order_by=order_by,
+            current_page=current_page,
+            page_size=page_size,
         )
 
         return await self._connect_by_fetch(
