@@ -13,13 +13,8 @@ from ..constant import (
     EnumOrderBy,
     MAP_ORDER_BY_SQL,
     EnumDatetimeDuration,
+    VALID_DURATIONS,
 )
-
-VALID_DURATIONS = {
-    "DAILY": ("day", 'YYYY-MM-DD'),
-    "MONTHLY": ("month", 'YYYY-MM'),
-    "YEARLY": ("year", 'YYYY'),
-}
 
 
 class DbAction:

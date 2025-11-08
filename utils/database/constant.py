@@ -26,3 +26,8 @@ MAP_ORDER_BY_MQL = {
 }
 
 
+VALID_DURATIONS = {
+    "DAILY": ("day", 'YYYY-MM-DD'),
+    "MONTHLY": ("month", 'YYYY-MM'),
+    "YEARLY": ("year", 'YYYY'),
+}
